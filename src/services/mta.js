@@ -88,7 +88,7 @@ function formatTimestamp(ts) {
   try { return new Date(ts * 1000).toISOString(); } catch { return null; }
 }
 
-export async function fetchFeed(groupId, { useCache = true } = {}) {
+export async function fetchFeed(groupId, { useCache = true, apiKey: overrideApiKey = null } = {}) {
   const url = getGroupUrl(groupId);
   if (!url) throw new Error(`Unknown feed group: ${groupId}`);
 
@@ -98,7 +98,7 @@ export async function fetchFeed(groupId, { useCache = true } = {}) {
     if (c) return c;
   }
 
-  const apiKey = process.env.MTA_API_KEY;
+  const apiKey = overrideApiKey || process.env.MTA_API_KEY;
   const resp = await axios.get(url, {
     responseType: 'arraybuffer',
     headers: apiKey ? { 'x-api-key': apiKey } : undefined,
@@ -150,6 +150,6 @@ export async function fetchFeed(groupId, { useCache = true } = {}) {
     });
   }
 
-  setCache(cacheKey, result);
+  if (useCache) setCache(cacheKey, result);
   return result;
 }

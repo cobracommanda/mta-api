@@ -80,13 +80,13 @@ function buildArrivalMap(feedEntities) {
  * Returns a humanized board for a stop, cached for 20m.
  * groupId: ACE | BDFM | G | JZ | NQRW | L | SI | 1234567
  */
-export async function getArrivalBoard(groupId, stopId) {
+export async function getArrivalBoard(groupId, stopId, { apiKey = null, useCache = true } = {}) {
   const key = `board:${groupId}`;
-  let board = getCache(key);
+  let board = useCache ? getCache(key) : null;
 
   if (!board) {
     // build fresh from feed and cache
-    const feed = await fetchFeed(groupId, { useCache: true });
+    const feed = await fetchFeed(groupId, { useCache, apiKey });
     const byStop = buildArrivalMap(feed);
     const { dict: stops } = await loadStops();
 
@@ -100,7 +100,7 @@ export async function getArrivalBoard(groupId, stopId) {
         arrivals,
       };
     }
-    setCache(key, board);
+    if (useCache) setCache(key, board);
   }
 
   // format the single stop response at request-time (updates “in 3m” labels)
