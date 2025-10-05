@@ -83,11 +83,38 @@ function getGroupUrl(id) {
   return g?.url || null;
 }
 
+/**
+ * Convert a Unix timestamp (seconds) to an ISO 8601 string.
+ * @param {number} ts - Unix timestamp in seconds.
+ * @returns {string|null} The ISO 8601 representation of the timestamp, or `null` if `ts` is falsy or cannot be converted.
+ */
 function formatTimestamp(ts) {
   if (!ts) return null;
   try { return new Date(ts * 1000).toISOString(); } catch { return null; }
 }
 
+/**
+ * Fetches and decodes the GTFS-Realtime feed for the specified group and returns a simplified list of trip updates.
+ *
+ * @param {string} groupId - The feed group identifier (e.g., "ACE", "BDFM", "G").
+ * @param {Object} [options] - Optional settings.
+ * @param {boolean} [options.useCache=true] - If true, attempt to read from and write to the in-memory cache.
+ * @param {string|null} [options.apiKey=null] - Optional API key to use for the request; if omitted the MTA_API_KEY environment value is used.
+ * @returns {Array<Object>} An array of trip-update objects. Each object contains:
+ *   - id: feed entity id or `null`.
+ *   - routeId: route identifier or `null`.
+ *   - tripId: trip identifier or `null`.
+ *   - startDate: trip start date (YYYYMMDD) or `null`.
+ *   - vehicleId: vehicle identifier or `null`.
+ *   - stopUpdates: array of stop-update objects, each with:
+ *       - stopId: stop identifier or `null`.
+ *       - stopName: stop name if available, otherwise `null`.
+ *       - arrival: { time: ISO string or `null`, delay: number or `null` }.
+ *       - departure: { time: ISO string or `null`, delay: number or `null` }.
+ *       - scheduleRelationship: relationship value or `null`.
+ *   - timestamp: feed header timestamp as ISO string or `null`.
+ * @throws {Error} If the provided groupId does not correspond to a known feed group.
+ */
 export async function fetchFeed(groupId, { useCache = true, apiKey: overrideApiKey = null } = {}) {
   const url = getGroupUrl(groupId);
   if (!url) throw new Error(`Unknown feed group: ${groupId}`);

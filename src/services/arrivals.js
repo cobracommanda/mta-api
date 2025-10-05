@@ -77,8 +77,29 @@ function buildArrivalMap(feedEntities) {
 }
 
 /**
- * Returns a humanized board for a stop, cached for 20m.
- * groupId: ACE | BDFM | G | JZ | NQRW | L | SI | 1234567
+ * Get a humanized arrival board for a specific stop.
+ *
+ * Fetches and formats arrivals for the stop; results may be served from an in-memory cache
+ * unless `useCache` is set to `false`.
+ *
+ * @param {string} groupId - Feed group identifier (e.g. "ACE", "BDFM", "G", "JZ", "NQRW", "L", "SI", or numerical id).
+ * @param {string} stopId - Stop identifier to return the board row for.
+ * @param {{ apiKey?: string|null, useCache?: boolean }} [options] - Optional behavior flags.
+ * @param {string|null} [options.apiKey=null] - Optional API key forwarded to the feed fetch.
+ * @param {boolean} [options.useCache=true] - When `true`, allow cache reads/writes; when `false`, always fetch fresh data.
+ * @returns {{ stopId: string, stopName: string|null, updatedAt: string|null, now?: string, arrivals: Array<Object> }}
+ *   An object representing the stop's board row.
+ *   - `stopId`: the requested stop identifier.
+ *   - `stopName`: human-friendly stop name or `null` if unknown.
+ *   - `updatedAt`: ISO timestamp when the board was last built, or `null` if no data exists for the stop.
+ *   - `now`: current ISO timestamp (present when the stop row exists).
+ *   - `arrivals`: array of arrival items; each item contains at least:
+ *       - `whenISO` (string): original ISO timestamp of the arrival/departure.
+ *       - `whenLocal` (string|null): localized "HH:MM" representation of `whenISO`.
+ *       - `in` (string): human-friendly ETA like "now", "1m", or "3m ago".
+ *       - `routeId` (string), `tripId` (string), `scheduleRelationship` (string), and `meta` (object) when available.
+ *
+ *   If the stop has no data, `arrivals` will be an empty array and `stopName`/`updatedAt` will be `null`.
  */
 export async function getArrivalBoard(groupId, stopId, { apiKey = null, useCache = true } = {}) {
   const key = `board:${groupId}`;
