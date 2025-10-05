@@ -83,12 +83,27 @@ function getGroupUrl(id) {
   return g?.url || null;
 }
 
+/**
+ * Convert a Unix timestamp (seconds) to an ISO 8601 string.
+ * @param {number} ts - Unix timestamp in seconds.
+ * @returns {string|null} ISO 8601 timestamp string, or `null` if `ts` is falsy or cannot be converted.
+ */
 function formatTimestamp(ts) {
   if (!ts) return null;
   try { return new Date(ts * 1000).toISOString(); } catch { return null; }
 }
 
-export async function fetchFeed(groupId, { useCache = true } = {}) {
+/**
+ * Fetches and decodes a GTFS-Realtime feed for a feed group, returning a simplified list of trip updates.
+ *
+ * @param {string} groupId - Feed group identifier (case-insensitive) matching one of the configured GROUPS.
+ * @param {Object} [options]
+ * @param {boolean} [options.useCache=true] - If true, attempts to return a cached result and stores the fetched result in the cache.
+ * @param {string|null} [options.apiKey=null] - Optional API key to use for the request; if omitted, the MTA_API_KEY environment variable is used.
+ * @returns {Array<Object>} An array of simplified feed entities, each containing: `id`, `routeId`, `tripId`, `startDate`, `vehicleId`, `stopUpdates` (array of stop update objects with `stopId`, `stopName`, `arrival`, `departure`, `scheduleRelationship`), and `timestamp`.
+ * @throws {Error} If the provided `groupId` does not correspond to a known feed group.
+ */
+export async function fetchFeed(groupId, { useCache = true, apiKey: overrideApiKey = null } = {}) {
   const url = getGroupUrl(groupId);
   if (!url) throw new Error(`Unknown feed group: ${groupId}`);
 
@@ -98,7 +113,7 @@ export async function fetchFeed(groupId, { useCache = true } = {}) {
     if (c) return c;
   }
 
-  const apiKey = process.env.MTA_API_KEY;
+  const apiKey = overrideApiKey || process.env.MTA_API_KEY;
   const resp = await axios.get(url, {
     responseType: 'arraybuffer',
     headers: apiKey ? { 'x-api-key': apiKey } : undefined,
@@ -150,6 +165,6 @@ export async function fetchFeed(groupId, { useCache = true } = {}) {
     });
   }
 
-  setCache(cacheKey, result);
+  if (useCache) setCache(cacheKey, result);
   return result;
 }

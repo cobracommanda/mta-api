@@ -77,16 +77,21 @@ function buildArrivalMap(feedEntities) {
 }
 
 /**
- * Returns a humanized board for a stop, cached for 20m.
- * groupId: ACE | BDFM | G | JZ | NQRW | L | SI | 1234567
- */
-export async function getArrivalBoard(groupId, stopId) {
+ * Get the arrival board for a specific stop with human-friendly ETA labels.
+ *
+ * @param {string} groupId - Feed group identifier (e.g., "ACE", "BDFM", "G", "JZ", "NQRW", "L", "SI", or numeric group IDs).
+ * @param {string} stopId - Stop identifier to retrieve from the board.
+ * @param {Object} [options] - Optional settings.
+ * @param {string|null} [options.apiKey=null] - Optional API key to pass to the feed fetch.
+ * @param {boolean} [options.useCache=true] - When `true`, attempt to read/write the board cache; when `false`, always build a fresh board.
+ * @returns {{ stopId: string, stopName: string|null, updatedAt: string|null, now: string, arrivals: Array<Object> }} An object for the requested stop containing current timestamps and an array of arrival objects. Each arrival includes humanized `in` (ETA) and `whenLocal` (local time) fields.
+export async function getArrivalBoard(groupId, stopId, { apiKey = null, useCache = true } = {}) {
   const key = `board:${groupId}`;
-  let board = getCache(key);
+  let board = useCache ? getCache(key) : null;
 
   if (!board) {
     // build fresh from feed and cache
-    const feed = await fetchFeed(groupId, { useCache: true });
+    const feed = await fetchFeed(groupId, { useCache, apiKey });
     const byStop = buildArrivalMap(feed);
     const { dict: stops } = await loadStops();
 
@@ -100,7 +105,7 @@ export async function getArrivalBoard(groupId, stopId) {
         arrivals,
       };
     }
-    setCache(key, board);
+    if (useCache) setCache(key, board);
   }
 
   // format the single stop response at request-time (updates “in 3m” labels)
