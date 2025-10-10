@@ -11,14 +11,14 @@ router.get('/', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-router.get('/:routeId/stops', async (req, res, next) => {
+async function respondWithRouteStops(routeIdRaw, res, next) {
   try {
-    const routeIdRaw = (req.params.routeId || '').toString().trim();
-    if (!routeIdRaw) {
+    const trimmed = (routeIdRaw || '').toString().trim();
+    if (!trimmed) {
       return res.status(400).json({ error: 'Route ID is required' });
     }
 
-    const routeId = routeIdRaw.toUpperCase();
+    const routeId = trimmed.toUpperCase();
     const { dict } = await loadStops();
 
     const stops = filterStopsByRoute(Object.values(dict), routeId);
@@ -31,6 +31,15 @@ router.get('/:routeId/stops', async (req, res, next) => {
 
     res.json(stops);
   } catch (e) { next(e); }
+}
+
+router.get('/:routeId/stops', async (req, res, next) => {
+  await respondWithRouteStops(req.params.routeId, res, next);
+});
+
+router.get('/:placeholder/stops/:routeId', async (req, res, next) => {
+  if (req.params.placeholder !== ':routeId') return next();
+  await respondWithRouteStops(req.params.routeId, res, next);
 });
 
 export default router;

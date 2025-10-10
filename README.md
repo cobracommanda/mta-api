@@ -19,7 +19,7 @@ curl -H "x-api-key: $MTA_API_KEY" "http://localhost:3000/v1/feed/NQRW"
 
 ### `GET /v1/routes/:routeId/stops`
 
-Returns the list of stops whose `routes` field contains the requested `routeId`. The results are sorted alphabetically by stop name (and by stop ID as a tiebreaker). A typical response looks like:
+Returns the list of stops whose `routes` field contains the requested `routeId`. Replace `:routeId` in the URL with the service you care about (for example, `N` or `Q`). The results are sorted alphabetically by stop name (and by stop ID as a tiebreaker). A typical response looks like:
 
 ```json
 [
@@ -33,6 +33,15 @@ Returns the list of stops whose `routes` field contains the requested `routeId`.
   }
 ]
 ```
+
+Example requests:
+
+```bash
+curl "http://localhost:3000/v1/routes/N/stops" | jq '.[0]'
+curl "http://localhost:3000/v1/routes/Q/stops" | jq '.[0]'
+```
+
+If you accidentally paste the placeholder (`/v1/routes/:routeId/stops/N`) from the docs, the server will treat the final segment (`N` in this example) as the route ID so you still receive data.
 
 If no stops match the provided `routeId`, an empty array is returned. Requesting the endpoint without a `routeId` yields a `400` error response.
 
