@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { loadRoutes, loadStops } from '../services/mta.js';
+import { filterStopsByRoute } from '../utils/routeMatching.js';
 
 const router = Router();
 
@@ -20,12 +21,7 @@ router.get('/:routeId/stops', async (req, res, next) => {
     const routeId = routeIdRaw.toUpperCase();
     const { dict } = await loadStops();
 
-    const stops = Object.values(dict).filter(stop => {
-      const routes = (stop.routes || '').toString().toUpperCase();
-      if (!routes) return false;
-      const tokens = routes.split(/[^A-Z0-9]+/).filter(Boolean);
-      return tokens.includes(routeId) || routes.includes(routeId);
-    });
+    const stops = filterStopsByRoute(Object.values(dict), routeId);
 
     stops.sort((a, b) => {
       const nameCompare = (a.name || '').localeCompare(b.name || '', 'en', { sensitivity: 'base' });

@@ -36,6 +36,8 @@ Returns the list of stops whose `routes` field contains the requested `routeId`.
 
 If no stops match the provided `routeId`, an empty array is returned. Requesting the endpoint without a `routeId` yields a `400` error response.
 
+> NOTE: The static stop file bundled with this project does not enumerate per-stop route memberships. The server currently infers them for the Broadway/Queensbridge/Brighton trunks (covering the `N`, `Q`, `R`, and `W` services) by inspecting GTFS stop identifiers. Other routes will return an empty list until richer source data is provided.
+
 > NOTE: If you set `MTA_API_KEY` in `.env`, you don't need to pass the header; the server will include it automatically.
 
 ## Setup

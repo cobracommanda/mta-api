@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { loadStops } from '../services/mta.js';
+import { stopServesRoute } from '../utils/routeMatching.js';
 
 const router = Router();
 
@@ -14,7 +15,7 @@ router.get('/', async (req, res, next) => {
       items = items.filter(s => s.name.toLowerCase().includes(query) || s.id.toLowerCase().includes(query));
     }
     if (route) {
-      items = items.filter(s => (s.routes || '').toUpperCase().includes(route));
+      items = items.filter(s => stopServesRoute(s, route));
     }
     res.json(items.slice(0, 2000)); // cap to keep responses reasonable
   } catch (e) { next(e); }
