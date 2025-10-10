@@ -7,6 +7,32 @@ const ROUTE_EQUIV = {
 };
 
 const ROUTE_RULES = {
+  '1': [
+    { prefix: '', min: 101, max: 199 },
+  ],
+  '2': [
+    { prefix: '', min: 201, max: 299 },
+  ],
+  '3': [
+    { prefix: '', min: 301, max: 399 },
+  ],
+  '4': [
+    { prefix: '', min: 401, max: 499 },
+  ],
+  '5': [
+    { prefix: '', min: 201, max: 299 },
+    { prefix: '', min: 401, max: 499 },
+    { prefix: '', min: 501, max: 599 },
+  ],
+  '6': [
+    { prefix: '', min: 601, max: 699 },
+  ],
+  '7': [
+    { prefix: '', min: 701, max: 799 },
+  ],
+  'S': [
+    { prefix: '', min: 901, max: 999 },
+  ],
   N: [
     { prefix: 'N' },
     { prefix: 'R', min: 1, max: 21 },

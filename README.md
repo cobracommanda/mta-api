@@ -19,7 +19,7 @@ curl -H "x-api-key: $MTA_API_KEY" "http://localhost:3000/v1/feed/NQRW"
 
 ### `GET /v1/routes/:routeId/stops`
 
-Returns the list of stops whose `routes` field contains the requested `routeId`. Replace `:routeId` in the URL with the service you care about (for example, `N` or `Q`). The results are sorted alphabetically by stop name (and by stop ID as a tiebreaker). A typical response looks like:
+Returns the list of stops that serve the requested `routeId`. Replace `:routeId` in the URL with the service you care about (for example, `N`, `5`, or `Q`). The results are sorted alphabetically by stop name (and by stop ID as a tiebreaker). A typical response looks like:
 
 ```json
 [
@@ -38,6 +38,7 @@ Example requests:
 
 ```bash
 curl "http://localhost:3000/v1/routes/N/stops" | jq '.[0]'
+curl "http://localhost:3000/v1/routes/5/stops" | jq '.[0]'
 curl "http://localhost:3000/v1/routes/Q/stops" | jq '.[0]'
 ```
 
@@ -45,7 +46,7 @@ If you accidentally paste the placeholder (`/v1/routes/:routeId/stops/N`) from t
 
 If no stops match the provided `routeId`, an empty array is returned. Requesting the endpoint without a `routeId` yields a `400` error response.
 
-> NOTE: The static stop file bundled with this project does not enumerate per-stop route memberships. The server currently infers them for the Broadway/Queensbridge/Brighton trunks (covering the `N`, `Q`, `R`, and `W` services) by inspecting GTFS stop identifiers. Other routes will return an empty list until richer source data is provided.
+> NOTE: The static stop file bundled with this project does not enumerate per-stop route memberships. The server infers them from GTFS stop identifiers, covering the numbered services (`1`–`7`, shuttle variants) and the Broadway/Queensbridge/Brighton trunk (`N`, `Q`, `R`, `W`). Routes outside those heuristics will return an empty list until richer source data is provided.
 
 > NOTE: If you set `MTA_API_KEY` in `.env`, you don't need to pass the header; the server will include it automatically.
 
