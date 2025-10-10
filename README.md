@@ -6,6 +6,7 @@ A tiny Express server that exposes NYC Subway GTFS-realtime data + static stops/
 
 - `GET /health` – quick check
 - `GET /v1/routes` – list routes from `data/routes.txt`
+- `GET /v1/routes/:routeId/stops` – stops serving a specific route (alphabetically sorted)
 - `GET /v1/stops?query=Times%20Sq&route=N` – search stops by name/ID; optionally filter by a route letter
 - `GET /v1/stops/:stopId` – single stop by ID (e.g., `R16N`)
 - `GET /v1/feed` – list available feed *groups* (`ACE`, `BDFM`, `G`, `JZ`, `NQRW`, `L`, `SI`, `1234567`)
@@ -15,6 +16,37 @@ Example:
 ```
 curl -H "x-api-key: $MTA_API_KEY" "http://localhost:3000/v1/feed/NQRW"
 ```
+
+### `GET /v1/routes/:routeId/stops`
+
+Returns the list of stops that serve the requested `routeId`. Replace `:routeId` in the URL with the service you care about (for example, `N`, `5`, or `Q`). The results are sorted alphabetically by stop name (and by stop ID as a tiebreaker). A typical response looks like:
+
+```json
+[
+  {
+    "id": "R16N",
+    "name": "Times Sq-42 St",
+    "lat": 40.75529,
+    "lon": -73.987495,
+    "routes": "N Q R W",
+    "parent": "R16"
+  }
+]
+```
+
+Example requests:
+
+```bash
+curl "http://localhost:3000/v1/routes/N/stops" | jq '.[0]'
+curl "http://localhost:3000/v1/routes/5/stops" | jq '.[0]'
+curl "http://localhost:3000/v1/routes/Q/stops" | jq '.[0]'
+```
+
+If you accidentally paste the placeholder (`/v1/routes/:routeId/stops/N`) from the docs, the server will treat the final segment (`N` in this example) as the route ID so you still receive data.
+
+If no stops match the provided `routeId`, an empty array is returned. Requesting the endpoint without a `routeId` yields a `400` error response.
+
+> NOTE: The static stop file bundled with this project does not enumerate per-stop route memberships. The server infers them from GTFS stop identifiers, covering the numbered services (`1`–`7`, shuttle variants) and the Broadway/Queensbridge/Brighton trunk (`N`, `Q`, `R`, `W`). Routes outside those heuristics will return an empty list until richer source data is provided.
 
 > NOTE: If you set `MTA_API_KEY` in `.env`, you don't need to pass the header; the server will include it automatically.
 

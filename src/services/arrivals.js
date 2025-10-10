@@ -85,6 +85,7 @@ function buildArrivalMap(feedEntities) {
  * @param {string|null} [options.apiKey=null] - Optional API key to pass to the feed fetch.
  * @param {boolean} [options.useCache=true] - When `true`, attempt to read/write the board cache; when `false`, always build a fresh board.
  * @returns {{ stopId: string, stopName: string|null, updatedAt: string|null, now: string, arrivals: Array<Object> }} An object for the requested stop containing current timestamps and an array of arrival objects. Each arrival includes humanized `in` (ETA) and `whenLocal` (local time) fields.
+ */
 export async function getArrivalBoard(groupId, stopId, { apiKey = null, useCache = true } = {}) {
   const key = `board:${groupId}`;
   let board = useCache ? getCache(key) : null;
